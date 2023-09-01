@@ -1,47 +1,65 @@
 pipeline {
     agent any
-
     tools {
         nodejs "node"
     }
-
-
-    environment {
-        DOCKERHUB_CREDENTIALS = 'Dockerhub-cred' // Set this to your Docker Hub credentials ID
-        IMAGE_NAME = 'my-node-app'
-        IMAGE_TAG = 'latest'
-    }
-
     stages {
-        stage('Build') {
+        stage('increment version') {
             steps {
-                echo 'Building..'
                 script {
-                    // Use Node.js and npm to install dependencies and build the app
-                    echo 'Testing nodejs app'
+                    
                     dir("app") {
+                    
+                        sh "npm version minor"
+
+                        
+                        def packageJson = readJSON file: 'package.json'
+                        def version = packageJson.version
+
+                        
+                        env.IMAGE_NAME = "$version-$BUILD_NUMBER"
+                    }
+
+                   
+                }
+            }
+        }
+        stage('Run tests') {
+            steps {
+               script {
+                   
+                    dir("app") {
+                        
                         sh "npm install"
                         sh "npm run test"
-                    
-                    }
-                }
+                    } 
+               }
             }
         }
-        stage('Test') {
+        stage('Build and Push docker image') {
             steps {
-                echo 'Testing..'
+                withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'USER', passwordVariable: 'PASS')]){
+                    sh "docker build -t docker-hub-id/myapp:${IMAGE_NAME} ."
+                    sh 'echo $PASS | docker login -u $USER --password-stdin'
+                    sh "docker push docker-hub-id/myapp:${IMAGE_NAME}"
+                }
+            }
+        }
+        stage('commit version update') {
+            steps {
                 script {
-                    // Build the Docker image
-                    docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
-
-                    // Log in to Docker Hub
-                    docker.withRegistry('https://registry.hub.docker.com', DOCKERHUB_CREDENTIALS) {
-                        // Push the Docker image to Docker Hub
-                        docker.image("${IMAGE_NAME}:${IMAGE_TAG}").push()
+                    withCredentials([usernamePassword(credentialsId: 'gitlab-credentials', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                        
+                        sh 'git config --global user.email "jenkins@example.com"'
+                        sh 'git config --global user.name "jenkins"'
+                        sh 'git remote set-url origin https://$USER:$PASS@https://gitlab.com/twn-devops-bootcamp/latest/08-jenkins/jenkins-exercises.git'
+                        sh 'git add .'
+                        sh 'git commit -m "ci: version bump"'
+                        sh 'git push origin HEAD:jenkins-jobs'
                     }
                 }
             }
         }
-        
     }
 }
+
