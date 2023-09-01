@@ -18,8 +18,8 @@ pipeline {
                         # install all dependencies needed for running tests
                         sh "npm install"
                         sh "npm run test"
-
                     }
+                }
             }
         }
         stage('Test') {
