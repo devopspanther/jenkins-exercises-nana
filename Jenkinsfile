@@ -15,6 +15,7 @@ pipeline {
                     // Use Node.js and npm to install dependencies and build the app
                     echo 'Testing nodejs app'
                     dir("app") {
+                        sh "npm install"
                         sh "npm run test"
                     
                     }
