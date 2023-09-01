@@ -8,19 +8,21 @@ pipeline {
     }
 
     stages {
-        stage('Test') {
+        stage('Build') {
             steps {
+                echo 'Building..'
                 script {
                     // Use Node.js and npm to install dependencies and build the app
                     echo 'Testing docker image'
                     sh 'cd app/'
                     sh 'npm install'
                     sh 'npm test'
+                }
             }
         }
-
-        stage('Dockerize and Push') {
+        stage('Test') {
             steps {
+                echo 'Testing..'
                 script {
                     // Build the Docker image
                     docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
@@ -33,11 +35,6 @@ pipeline {
                 }
             }
         }
-    }
-
-    post {
-        always {
-            // Clean up any temporary files or resources
-        }
+        
     }
 }
