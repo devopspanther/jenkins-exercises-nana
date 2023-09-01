@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    tools {
+        nodejs "node"
+    }
+
+
     environment {
         DOCKERHUB_CREDENTIALS = 'Dockerhub-cred' // Set this to your Docker Hub credentials ID
         IMAGE_NAME = 'my-node-app'
