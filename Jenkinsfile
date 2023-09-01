@@ -15,7 +15,6 @@ pipeline {
                     // Use Node.js and npm to install dependencies and build the app
                     echo 'Testing docker image'
                     sh 'cd app/'
-                    sh 'npm install'
                     sh 'npm test'
                 }
             }
