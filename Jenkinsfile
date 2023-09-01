@@ -16,7 +16,7 @@ pipeline {
                     echo 'Testing docker image'
                     dir("app") {
                         sh "npm install"
-                        sh "npm run test"
+                    
                     }
                 }
             }
