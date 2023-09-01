@@ -18,11 +18,11 @@ pipeline {
                 echo 'Building..'
                 script {
                     // Use Node.js and npm to install dependencies and build the app
-                    echo 'Testing docker image'
+                    echo 'Testing nodejs app'
                     dir("app") {
-                        # install all dependencies needed for running tests
                         sh "npm install"
                         sh "npm run test"
+                    
                     }
                 }
             }
